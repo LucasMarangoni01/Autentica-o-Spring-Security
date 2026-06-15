@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Listagem de Cursos</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<div th:replace="~{/fragments/menu.html :: menu}"></div>
+
+<main>
+
+  <!-- Topo -->
+  <div class="top-bar">
+    <h2>Listagem de Cursos</h2>
+
+    <input type="text" id="searchInput" placeholder="Buscar cursos...">
+
+    <a th:href="@{/curso/cadastro}" class="btn btn-success">
+      Cadastrar Novo
+    </a>
+  </div>
+
+  <!-- Tabela -->
+  <div class="table-container">
+    <table>
+      <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Carga Horária</th>
+        <th>Ações</th>
+      </tr>
+      </thead>
+      <tbody>
+
+      <tr th:if="${cursos.empty}">
+        <td colspan="4" style="text-align:center;">
+          Nenhum registro encontrado.
+        </td>
+      </tr>
+
+      <tr th:each="p : ${cursos}">
+        <td th:text="${p.nome}"></td>
+        <td th:text="${p.carga_horaria}"></td>
+        <td class="acoes">
+          <a th:href="@{'/curso/alterar/' + ${p.id}}"
+             class="btn btn-icon btn-edit"
+             title="Alterar">✏️</a>
+
+          <a th:href="@{'/curso/excluir/' + ${p.id}}"
+             class="btn btn-icon btn-delete"
+             title="Excluir"
+             onclick="return confirm('Deseja realmente excluir este registro?');">🗑️</a>
+        </td>
+      </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Paginação -->
+  <div class="pagination" id="pagination"></div>
+
+</main>
+
+<div th:replace="~{/fragments/footer.html :: footer}"></div>
+
+<script src="/script.js"></script>
+
+</body>
+</html>

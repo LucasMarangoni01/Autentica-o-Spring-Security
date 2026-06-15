@@ -1,0 +1,8 @@
+com\pbe\ianes\model\Pessoa.class
+com\pbe\ianes\controller\PessoaController.class
+com\pbe\ianes\repository\PessoaRepository.class
+com\pbe\ianes\IanesApplication.class
+com\pbe\ianes\controller\HomeController.class
+com\pbe\ianes\controller\CursoController.class
+com\pbe\ianes\repository\CursoRepository.class
+com\pbe\ianes\model\Curso.class

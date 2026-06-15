@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.w3.org/1999/xhtml"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro - Escola</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div  th:fragment="menu">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/aluno/listagem">Alunos</a></li>
+      <li><a href="/professor/listagem">Professores</a></li>
+      <li><a href="/funcionario/listagem">Funcionários</a></li>
+      <li><a href="/curso/listagem">Cursos</a></li>
+      <li><a href="/ocorrencia/listagem">Ocorrências</a></li>
+      <div sec:authorize="hasRole('ADMIN')">
+        <li><a href="/usuarios">Usuários</a></li>
+      </div>
+      <li style="margin-left: auto;"><a href="/logout">Sair</a></li>
+      <li><a sec:authentication="name"></a></li>
+    </ul>
+  </nav>
+</div>
+</body>
+</html>

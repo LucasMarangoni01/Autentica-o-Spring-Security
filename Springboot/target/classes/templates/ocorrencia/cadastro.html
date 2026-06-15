@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - ocorrencia</title>
+    <link rel="stylesheet" href="/style.css">
+
+    <style>
+        /* BOTÃO CÂMERA */
+        .btn-camera {
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background: #0d6efd;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* MODAL */
+        .modal-foto {
+            display: none;
+            position: fixed;
+            z-index: 9999; /* 🔥 garante ficar acima de tudo */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content-foto {
+            background: white;
+            padding: 25px;
+            width: 320px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .botoes-foto {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .botoes-foto button {
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            background: #198754;
+            color: white;
+            cursor: pointer;
+        }
+
+        .fechar {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Menu -->
+<div th:replace="~{/fragments/menu.html :: menu}"></div>
+
+<main>
+    <div class="card">
+        <h2>Cadastro de ocorrencia</h2>
+
+        <form id="form-cadastro"
+              th:action="@{/ocorrencia/salvar}"
+              th:object="${ocorrencia}"
+              method="post"
+              enctype="multipart/form-data">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>Data da Ocorrência</label>
+                    <input type="date" required th:field="*{dataOcorrencia}">
+                </div>
+
+                <div class="form-group">
+                    <label>Descrição da Ocorrência</label>
+                    <input type="text" required th:field="*{descricaoOcorrencia}">
+                </div>
+
+                <div class="form-group">
+                    <label>Status:</label>
+                    <select id="status" th:field="*{status}">
+                        <option value="ABERTA">Aberta</option>
+                        <option value="EM_ANDAMENTO">Em andamento</option>
+                        <option value="CONCLUIDA">Concluída</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Rua</label>
+                    <input type="text" th:field="*{rua}">
+                </div>
+
+                <div class="form-group">
+                    <label>Bairro</label>
+                    <input type="text" required th:field="*{bairro}">
+                </div>
+
+                <!-- FOTO -->
+                <div class="form-group">
+                    <label>Foto:</label>
+
+                    <button type="button" class="btn-camera" onclick="abrirModalFoto()">
+                        📷 Tirar / Selecionar Foto
+                    </button>
+
+                    <!-- input real usado no backend -->
+                    <input type="file" id="inputArquivo" name="arquivoFoto" accept="image/*" hidden>
+                </div>
+
+            </div>
+
+            <div style="margin-top: 20px;">
+                <button type="submit" class="btn btn-success">Salvar</button>
+                <a th:href="@{/ocorrencia/listagem}" class="btn btn-alter">Voltar para Lista</a>
+            </div>
+
+        </form>
+    </div>
+</main>
+
+<!-- FOOTER -->
+<div th:replace="~{/fragments/footer.html :: footer}"></div>
+
+<!-- MODAL -->
+<div id="modalFoto" class="modal-foto">
+    <div class="modal-content-foto">
+
+        <h3>Selecionar Foto</h3>
+
+        <div class="botoes-foto">
+            <button onclick="selecionarArquivo()">📁 Arquivo</button>
+            <button onclick="iniciarCamera()">📷 Câmera</button>
+        </div>
+
+        <!-- CÂMERA -->
+        <video id="video" width="100%" autoplay style="display:none;"></video>
+        <canvas id="canvas" style="display:none;"></canvas>
+
+        <button id="btnCapturar" onclick="capturarFoto()" style="display:none;">
+            📸 Capturar
+        </button>
+
+        <button class="fechar" onclick="fecharModalFoto()">Fechar</button>
+    </div>
+</div>
+
+<!-- JAVASCRIPT -->
+<script>
+    // STATUS sempre ABERTA
+    document.addEventListener("DOMContentLoaded", function() {
+        const status = document.getElementById("status");
+        status.value = "ABERTA";
+
+        status.addEventListener("change", function() {
+            this.value = "ABERTA";
+        });
+    });
+
+    // MODAL
+let stream;
+
+function abrirModalFoto() {
+    document.getElementById("modalFoto").style.display = "flex";
+}
+
+function fecharModalFoto() {
+    document.getElementById("modalFoto").style.display = "none";
+
+    // parar câmera
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+    }
+
+    document.getElementById("video").style.display = "none";
+    document.getElementById("btnCapturar").style.display = "none";
+}
+
+// 📁 ARQUIVO NORMAL
+function selecionarArquivo() {
+    const input = document.getElementById("inputArquivo");
+    input.click();
+    fecharModalFoto();
+}
+
+// 📷 INICIAR CÂMERA REAL
+function iniciarCamera() {
+    const video = document.getElementById("video");
+    const botao = document.getElementById("btnCapturar");
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function(s) {
+            stream = s;
+            video.srcObject = stream;
+
+            video.style.display = "block";
+            botao.style.display = "inline-block";
+        })
+        .catch(function(err) {
+            alert("Erro ao acessar câmera: " + err);
+        });
+}
+
+// 📸 CAPTURAR FOTO
+function capturarFoto() {
+    const video = document.getElementById("video");
+    const canvas = document.getElementById("canvas");
+    const input = document.getElementById("inputArquivo");
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(video, 0, 0);
+
+    canvas.toBlob(function(blob) {
+        const file = new File([blob], "foto.png", { type: "image/png" });
+
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+
+        input.files = dataTransfer.files;
+
+        fecharModalFoto();
+    });
+}
+</script>
+
+</body>
+</html>

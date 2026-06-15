@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Listagem - Ocorrência</title>
+  <link rel="stylesheet" href="/style2.css">
+
+  <!-- CSS do Modal -->
+  <style>
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 999;
+      padding-top: 60px;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.9);
+    }
+
+    .modal-conteudo {
+      display: block;
+      margin: auto;
+      max-width: 80%;
+      max-height: 80%;
+      border-radius: 10px;
+    }
+
+    .fechar {
+      position: absolute;
+      top: 20px;
+      right: 35px;
+      color: #fff;
+      font-size: 40px;
+      cursor: pointer;
+    }
+
+    .foto-tabela {
+      width: 80px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .foto-tabela:hover {
+      transform: scale(1.05);
+    }
+  </style>
+
+</head>
+
+<body>
+
+<!-- Menu -->
+<div th:replace="~{/fragments/menu.html :: menu}"></div>
+
+<main>
+
+  <!--
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+    <h2>Listagem de Ocorrência</h2>
+    <a th:href="@{/ocorrencia/cadastro}" class="btn btn-success">Cadastrar Novo</a>
+  </div>
+  -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+
+    <h2>Listagem de Ocorrência</h2>
+
+    <!-- Campo de busca -->
+    <input
+            type="text"
+            id="busca"
+            placeholder="Buscar ocorrência..."
+            style="padding: 8px; border-radius: 5px; border: 1px solid #ccc; width: 250px;"
+    >
+
+    <a th:href="@{/ocorrencia/cadastro}" class="btn btn-success">Cadastrar Novo</a>
+  </div>
+
+
+
+
+  <div class="table-container">
+    <table>
+      <thead>
+      <tr>
+        <th>Foto</th>
+        <th>Data</th>
+        <th>Descrição</th>
+        <th>Status</th>
+        <th>Rua</th>
+        <th>Bairro</th>
+        <th>Ações</th>
+      </tr>
+      </thead>
+
+      <tbody>
+
+      <!-- Caso não tenha registros -->
+      <tr th:if="${ocorrencias.empty}">
+        <td colspan="5" style="text-align: center;">
+          Nenhum registro encontrado.
+        </td>
+      </tr>
+
+      <!-- Lista de ocorrencias -->
+      <tr th:each="p : ${ocorrencias}">
+
+        <!-- FOTO COM MODAL -->
+        <td>
+          <img th:if="${p.fotoOcorrencia != null}"
+               th:src="@{'/foto_ocorrencia/' + ${p.fotoOcorrencia}}"
+               class="foto-tabela"
+               onclick="abrirModal(this.src)">
+
+          <img th:if="${p.fotoOcorrencia == null}"
+               src="/foto_ocorrencia/default.png"
+               class="foto-tabela"
+               onclick="abrirModal(this.src)">
+        </td>
+
+        <td class="dt_ocorrencia"  th:text="${p.dataOcorrencia}"></td>
+        <td class="desc_ocorrencia" th:text="${p.descricaoOcorrencia}"></td>
+        <td class="status"  th:text="${p.status}"></td>
+        <td class="rua"  th:text="${p.rua}"></td>
+        <td class="bairro"  th:text="${p.bairro}"></td>
+
+        <td style="white-space: nowrap;">
+          <a th:href="@{'/ocorrencia/excluir/' + ${p.id}}"
+             class="btn btn-cancel"
+             onclick="return confirm('Deseja realmente excluir este registro?');"
+             style="margin-right: 8px;">
+            Excluir
+          </a>
+
+          <a th:href="@{'/ocorrencia/alterar/' + ${p.id}}"
+             class="btn btn-alter">
+            Alterar
+          </a>
+        </td>
+
+      </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+</main>
+
+<!-- MODAL -->
+<div id="modalImagem" class="modal">
+  <span class="fechar" onclick="fecharModal()">&times;</span>
+  <img class="modal-conteudo" id="imagemGrande">
+</div>
+
+<!-- Footer -->
+<div th:replace="~{/fragments/footer.html :: footer}"></div>
+
+<!-- JAVASCRIPT -->
+<script>
+  function abrirModal(src) {
+    const modal = document.getElementById("modalImagem");
+    const img = document.getElementById("imagemGrande");
+
+    modal.style.display = "block";
+    img.src = src;
+  }
+
+  function fecharModal() {
+    document.getElementById("modalImagem").style.display = "none";
+  }
+
+  // fechar clicando fora da imagem
+  window.onclick = function(event) {
+    const modal = document.getElementById("modalImagem");
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+  }
+
+document.addEventListener("DOMContentLoaded", function() {
+
+  const busca = document.getElementById("busca");
+
+  busca.addEventListener("keyup", function() {
+    let termo = this.value.toLowerCase();
+    let linhas = document.querySelectorAll("tbody tr");
+
+    linhas.forEach(function(linha) {
+      let texto = linha.textContent.toLowerCase();
+
+      if (texto.includes(termo)) {
+        linha.style.display = "";
+      } else {
+        linha.style.display = "none";
+      }
+    });
+  });
+
+  });
+
+
+</script>
+
+</body>
+</html>
